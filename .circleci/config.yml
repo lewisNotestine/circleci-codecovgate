@@ -18,9 +18,44 @@ jobs:
           name: "Say hello"
           command: "echo Hello, World!"
 
+  - generate-and-store-test-coverage:
+    docker:
+      - image: cimg/openjdk:stable
+    steps:
+      - checkout
+      - browser-tools/install-browser-tools
+      - run: mvn test
+      - store_artifacts:
+        path: target
+      - run:
+          # see https://circleci.com/docs/env-vars/#parameters-and-bash-environment
+          name: set cache key name variables
+          command: |
+            echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
+            echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
+      - save_cache:
+          key: $CACHE_KEY_RAW_COVERAGE_DATA
+
+  - evaluate-test-coverage:
+    docker:
+      - image: cimg/python:stable
+    steps:
+
+      # - # retrieve artifact from cache or wherever
+      - run:
+          name: "check cache key"
+          command: "echo $CACHE_KEY_RAW_COVERAGE_DATA"
+      # compute the coverage (python)
+
+      # compare coverage with cached coverage from main branch (python)
+
+      # conditionally fail build if coverage metric falls below value from cached main branch
+
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
   say-hello-workflow:
     jobs:
       - say-hello
+      - generate-and-store-test-coverage
+      - evaluate-test-coverage
