@@ -58,7 +58,7 @@ jobs:
           name: "calculate branch test coverage"
           command: |
             ls -an
-            python ./evaluateTestCoverage.py
+            python .circleci/evaluateTestCoverage.py
 
 
       # compute the coverage (python)
