@@ -18,7 +18,7 @@ jobs:
           name: "Say hello"
           command: "echo Hello, World!"
 
-  - generate-and-store-test-coverage:
+  generate-and-store-test-coverage:
     docker:
       - image: cimg/openjdk:stable
     steps:
@@ -36,7 +36,7 @@ jobs:
       - save_cache:
           key: $CACHE_KEY_RAW_COVERAGE_DATA
 
-  - evaluate-test-coverage:
+  evaluate-test-coverage:
     docker:
       - image: cimg/python:stable
     steps:
