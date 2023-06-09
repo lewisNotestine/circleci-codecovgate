@@ -44,8 +44,8 @@ jobs:
             echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
             echo $CACHE_KEY_RAW_COVERAGE_DATA
       - restore_cache:
-        keys:
-          - $CACHE_KEY_RAW_COVERAGE_DATA
+          keys:
+            - $CACHE_KEY_RAW_COVERAGE_DATA
       - run:
           name: "calculate branch test coverage"
           command: |
