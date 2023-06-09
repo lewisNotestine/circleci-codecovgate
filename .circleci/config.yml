@@ -43,11 +43,11 @@ jobs:
             - target/my-reports
 
 
-
   evaluate-test-coverage:
     docker:
       - image: cimg/python:3.11
     steps:
+      - checkout
       - run:
           name: "set and check cache key name variables"
           command: |
