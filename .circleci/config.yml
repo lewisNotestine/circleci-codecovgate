@@ -59,5 +59,6 @@ workflows:
   say-hello-workflow:
     jobs:
       - generate_and_store_test_coverage
-      - evaluate_test_coverage
-          requires: generate_and_store_test_coverage
+      - evaluate_test_coverage:
+          requires:
+            - generate_and_store_test_coverage
