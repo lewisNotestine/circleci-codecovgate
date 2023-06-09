@@ -57,6 +57,7 @@ jobs:
       - run:
           name: "calculate branch test coverage"
           command: |
+            ls -an
             python ./evaluateTestCoverage.py
 
 
