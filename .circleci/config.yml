@@ -8,19 +8,6 @@ orbs:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/configuration-reference/#executor-job
-    docker:
-      - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/configuration-reference/#steps
-    steps:
-      - checkout
-      - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
-
   generate-and-store-test-coverage:
     docker:
       - image: cimg/openjdk:17.0
@@ -43,8 +30,6 @@ jobs:
             - target/my-reports
 
   evaluate-test-coverage:
-    requires:
-      - generate-and-store-test-coverage
     docker:
       - image: cimg/python:3.11
     steps:
@@ -73,6 +58,7 @@ jobs:
 workflows:
   say-hello-workflow:
     jobs:
-      - say-hello
       - generate-and-store-test-coverage
       - evaluate-test-coverage
+          requires:
+            - generate-and-store-test-coverage
