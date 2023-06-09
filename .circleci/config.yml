@@ -28,6 +28,9 @@ jobs:
           key: $CACHE_KEY_RAW_COVERAGE_DATA
           paths:
             - target/my-reports
+      - store_artifacts:
+          path: target/my-reports
+          destination: jacoco-reports
 
   evaluate_test_coverage:
     docker:
@@ -40,11 +43,14 @@ jobs:
             echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
             echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
             echo $CACHE_KEY_RAW_COVERAGE_DATA
+      - restore_cache:
+        keys:
+          - $CACHE_KEY_RAW_COVERAGE_DATA
       - run:
           name: "calculate branch test coverage"
           command: |
             pip install -r .circleci/requirements.txt
-            python .circleci/evaluateTestCoverage.py
+            python .circleci/evaluateTestCoverage.py target/my-reports/index.html
 
 
       # compute the coverage (python)

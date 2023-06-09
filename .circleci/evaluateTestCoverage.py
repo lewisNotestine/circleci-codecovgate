@@ -19,6 +19,7 @@ def parse_coverage_from_doc(html_document):
     """
     Gets the coverage as a scalar, returns it
     """
+    print('getting code coverage pctage')
     soup = BeautifulSoup(html_document, 'html.parser')
     # parsed = parser.feed(html_document)
     dom = etree.HTML(str(soup))
