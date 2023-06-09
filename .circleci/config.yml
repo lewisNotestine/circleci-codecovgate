@@ -36,19 +36,22 @@ jobs:
           command: |
             echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
             echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
+      - run:
+          name: "check cache key"
+          command: echo $CACHE_KEY_RAW_COVERAGE_DATA
       - save_cache:
           key: $CACHE_KEY_RAW_COVERAGE_DATA
           paths:
             - target/my-reports
 
 
-  evaluate-test-coverage:
-    docker:
-      - image: cimg/python:3.11
-    steps:
-      - run:
-          name: "check cache key"
-          command: "echo $CACHE_KEY_RAW_COVERAGE_DATA"
+  # evaluate-test-coverage:
+  #   docker:
+  #     - image: cimg/python:3.11
+  #   steps:
+  #     - run:
+  #         name: "check cache key"
+  #         command: "echo $CACHE_KEY_RAW_COVERAGE_DATA"
       # compute the coverage (python)
 
       # compare coverage with cached coverage from main branch (python)
@@ -62,4 +65,4 @@ workflows:
     jobs:
       - say-hello
       - generate-and-store-test-coverage
-      - evaluate-test-coverage
+      # - evaluate-test-coverage
