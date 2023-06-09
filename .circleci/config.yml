@@ -43,7 +43,7 @@ jobs:
       - run:
           name: "calculate branch test coverage"
           command: |
-            ls -an
+            pip install -r .circleci/requirements.txt
             python .circleci/evaluateTestCoverage.py
 
 
