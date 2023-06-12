@@ -48,6 +48,7 @@ jobs:
             echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
             echo 'export LOCAL_BRANCH_COVERAGEPCT_FILENAME="$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
             echo 'export CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA="mainbranch_processed_coverage"' >> "$BASH_ENV"
+            echo 'branch is "$CIRCLE_BRANCH"'
 
       - restore_cache:
           keys:
@@ -59,49 +60,64 @@ jobs:
             ls -an ./target/my-reports/
             pip install -r .circleci/requirements.txt
             python .circleci/evaluateTestCoverage.py target/my-reports/index.html CACHE_KEY_PROCESSED_COVERAGE_DATA
-      - when:
-          condition:
-            equal: [$CIRCLE_BRANCH, "main"]
-          steps:
-            - run:
-                name: "calculate main branch code coverage"
-                command: python .circleci/evaluateTestCoverage.py target/my-reports/index.html CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
-        # TODO maybe consolidate these conditions in a way that makes sense.
-      - when:
-          condition:
-            equal: [$CIRCLE_BRANCH, "main"]
-          steps:
-            - save_cache:
-                key:
-                  - $CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
-                paths:
-                  - target/my-reports/mainbranch_processed_coverage.txt
-      - when:
-          condition:
-            not:
-              equal: [$CIRCLE_BRANCH, "main"]
-          steps:
-            - run:
-                name: "compare feature and main branch coverage results"
-                command: python .circleci/evaluateCompareTestCoverage.py $LOCAL_BRANCH_COVERAGEPCT_FILENAME target/my-reports/mainbranch_processed_coverage.txt
 
+      - run:
+          name: "compare feature and main branch coverage results"
+          command: python .circleci/evaluateCompareTestCoverage.py $LOCAL_BRANCH_COVERAGEPCT_FILENAME target/my-reports/mainbranch_processed_coverage.txt
 
+  save_main_branch_test_coverage:
+    docker:
+      - image: cimg/python:3.11
+    steps:
+      - checkout
+      - run:
+          name: "set and check cache key name variables"
+          command: |
 
+            # TODO Branch and build num can already be interpolated in cache keys.
+            # see https://circleci.com/docs/configuration-reference/#savecache
+            echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
+            echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
+            echo 'export CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA="mainbranch_processed_coverage"' >> "$BASH_ENV"
 
-      # compute the coverage (python)
+      - restore_cache:
+          keys:
+            - $CACHE_KEY_RAW_COVERAGE_DATA
 
-      # if branch name == main, stash code coverage
+      - run:
+          name: "calculate main branch code coverage"
+          command: |
+            pip install -r .circleci/requirements.txt
+            python .circleci/evaluateTestCoverage.py target/my-reports/index.html CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
 
-      # compare coverage with cached coverage from main branch (python)
+      - save_cache:
+          key: $CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
+          paths:
+            - target/my-reports/mainbranch_processed_coverage.txt
 
-      # conditionally fail build if coverage metric falls below value from cached main branch
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  feature-branch-workflow:
+    when:
+      not:
+        matches:
+          pattern: "^main$"
+          value: << pipeline.git.branch >>
     jobs:
       - generate_and_store_test_coverage
       - evaluate_test_coverage:
           requires:
             - generate_and_store_test_coverage
+  main-branch-workflow:
+    when:
+      matches:
+        pattern: "^main$"
+        value: << pipeline.git.branch >>
+    jobs:
+      - generate_and_store_test_coverage
+      - save_main_branch_test_coverage:
+          requires:
+            - generate_and_store_test_coverage
+
