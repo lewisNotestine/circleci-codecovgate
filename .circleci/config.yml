@@ -64,6 +64,9 @@ jobs:
             - restore_cache:
                 keys:
                   - $CACHE_KEY_RAW_COVERAGE_DATA
+
+            - restore_cache:
+                keys:
                   - mainbranch-process-cachekey
 
             - run:
