@@ -86,7 +86,7 @@ jobs:
 
       - run:
           name: "calculate main branch code coverage"
-          command:
+          command: |
             pip install -r .circleci/requirements.txt
             python .circleci/evaluateTestCoverage.py target/my-reports/index.html CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
 
