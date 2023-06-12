@@ -64,7 +64,9 @@ jobs:
 
       - run:
           name: "compare feature and main branch coverage results"
-          command: python .circleci/evaluateCompareTestCoverage.py $LOCAL_BRANCH_COVERAGEPCT_FILENAME processed_main/mainbranch_processed_coverage.txt
+          command: |
+            ls -an .
+            python .circleci/evaluateCompareTestCoverage.py $LOCAL_BRANCH_COVERAGEPCT_FILENAME processed_main/mainbranch_processed_coverage.txt
 
   save_main_branch_test_coverage:
     docker:
