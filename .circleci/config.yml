@@ -66,6 +66,7 @@ jobs:
             - run:
                 name: "calculate feature branch test coverage"
                 command: |
+                  ls -an .
                   ls -an ./target/my-reports/
                   pip install -r .circleci/requirements.txt
                   mkdir processed_feature
@@ -98,7 +99,7 @@ jobs:
                 command: |
                   mkdir processed_main
                   pip install -r .circleci/requirements.txt
-                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html processed_main CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
+                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html processed_main CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA2
 
             - save_cache:
                 key: $CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA2
