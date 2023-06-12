@@ -49,7 +49,7 @@ jobs:
             echo 'export $LOCAL_BRANCH_COVERAGEPCT_FILENAME="target/my-reports/$CACHE_KEY_PROCESSED_COVERAGE_DATA.txt"' >> "$BASH_ENV"
 
             echo 'export CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA="mainbranch_processed_coverage"' >> "$BASH_ENV"
-            echo 'export $MAIN_BRANCH_COVERAGEPCT_FILENAME="target/my-reports/$CACHE_KEY_PROCESSED_COVERAGE_DATA.txt"' >> "$BASH_ENV"
+            echo 'export $MAIN_BRANCH_COVERAGEPCT_FILENAME=target/my-reports/"$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
 
       - restore_cache:
           keys:
