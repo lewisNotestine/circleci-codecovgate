@@ -61,9 +61,9 @@ jobs:
                   echo 'branch is "$CIRCLE_BRANCH"'
 
 
-            - restore_cache:
-                keys:
-                  - $CACHE_KEY_RAW_COVERAGE_DATA
+            # - restore_cache:
+            #     keys:
+            #       - $CACHE_KEY_RAW_COVERAGE_DATA
 
             - restore_cache:
                 keys:
