@@ -40,20 +40,61 @@ jobs:
       - run:
           name: "set and check cache key name variables"
           command: |
+
+            # TODO Branch and build num can already be interpolated in cache keys.
+            # see https://circleci.com/docs/configuration-reference/#savecache
+            echo 'export MAIN_BRANCH_NAME'
             echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
+
             echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
-            echo $CACHE_KEY_RAW_COVERAGE_DATA
+            echo 'export $LOCAL_BRANCH_COVERAGEPCT_FILENAME="target/my-reports/$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
+
+            echo 'export CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA='mainbranch_processed_coverage'
+            echo 'export $MAIN_BRANCH_COVERAGEPCT_FILENAME="target/my-reports/$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
+
+            echo 'export $COVERAGE_PASSES="False"'
       - restore_cache:
           keys:
             - $CACHE_KEY_RAW_COVERAGE_DATA
+            - $CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
       - run:
-          name: "calculate branch test coverage"
+          name: "calculate feature branch test coverage"
           command: |
             pip install -r .circleci/requirements.txt
-            python .circleci/evaluateTestCoverage.py target/my-reports/index.html
+            python .circleci/evaluateTestCoverage.py target/my-reports/index.html CACHE_KEY_PROCESSED_COVERAGE_DATA
+      - when:
+          condition:
+            equal: [$CIRCLE_BRANCH, "main"]
+          steps:
+            - run:
+                name: "calculate main branch code coverage"
+                command: python .circleci/evaluateTestCoverage.py target/my-reports/index.html CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
+        # TODO maybe consolidate these conditions in a way that makes sense.
+      - when:
+          condition:
+            equal: [$CIRCLE_BRANCH, "main"]
+          steps:
+            - save_cache:
+                key:
+                  - $CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
+                paths:
+                  - $MAIN_BRANCH_COVERAGEPCT_FILENAME
+      - when:
+          condition:
+            not:
+              equal: [$CIRCLE_BRANCH, "main"]
+          steps:
+            - run:
+                name: "compare feature and main branch coverage results"
+                command: python .circleci/evaluateCompareTestCoverage.py $LOCAL_BRANCH_COVERAGEPCT_FILENAME $MAIN_BRANCH_COVERAGEPCT_FILENAME
+
+
+
 
 
       # compute the coverage (python)
+
+      # if branch name == main, stash code coverage
 
       # compare coverage with cached coverage from main branch (python)
 
