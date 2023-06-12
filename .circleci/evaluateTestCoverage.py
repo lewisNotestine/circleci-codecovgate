@@ -35,8 +35,7 @@ def parse_coverage_from_doc(html_document):
 
 
 def run_coverage(source_coverage_file_path,
-                 output_dir,
-                 circleci_branch_cachekeyname):
+                 output_file):
     """
     Writes the gathered coverage pct metric to a file
     """
@@ -44,8 +43,6 @@ def run_coverage(source_coverage_file_path,
     coverage_pct = parse_coverage_from_doc(html_document)
 
     # save pctage in file
-
-    output_file = os.path.join(output_dir, f'{circleci_branch_cachekeyname}.txt')
     with open(output_file, 'w') as wf:
         wf.writelines(coverage_pct)
         wf.flush()
