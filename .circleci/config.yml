@@ -43,7 +43,6 @@ jobs:
 
             # TODO Branch and build num can already be interpolated in cache keys.
             # see https://circleci.com/docs/configuration-reference/#savecache
-            echo 'export MAIN_BRANCH_NAME'
             echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
 
             echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
