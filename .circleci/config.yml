@@ -56,14 +56,15 @@ jobs:
 
                   echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
                   echo 'export LOCAL_BRANCH_COVERAGEPCT_FILENAME="processed_feature/$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
-                  echo 'export CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA2="processed_main/mainbranch_processed_coverage"' >> "$BASH_ENV"
+                  # echo 'export mainbranch-process-cachekey_PROCESSED_COVERAGE_DATA="mainbranch_processed_coverage"' >> "$BASH_ENV"
+
                   echo 'branch is "$CIRCLE_BRANCH"'
 
 
             - restore_cache:
                 keys:
                   - $CACHE_KEY_RAW_COVERAGE_DATA
-                  - $CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA2
+                  - mainbranch-process-cachekey
 
             - run:
                 name: "calculate feature branch test coverage"
@@ -90,7 +91,7 @@ jobs:
                   # see https://circleci.com/docs/configuration-reference/#savecache
                   echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
                   echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
-                  echo 'export CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA2="processed_main/mainbranch_processed_coverage"' >> "$BASH_ENV"
+                  # echo 'export mainbranch-process-cachekey_PROCESSED_COVERAGE_DATA2="processed_main/mainbranch_processed_coverage"' >> "$BASH_ENV"
 
             - restore_cache:
                 keys:
@@ -101,10 +102,10 @@ jobs:
                 command: |
                   mkdir processed_main
                   pip install -r .circleci/requirements.txt
-                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html processed_main CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA2
+                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html processed_main mainbranch-process-cachekey
 
             - save_cache:
-                key: $CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA2
+                key: mainbranch-process-cachekey
                 paths:
                   - processed_main/mainbranch_processed_coverage.txt
 
