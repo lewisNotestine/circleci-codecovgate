@@ -33,6 +33,11 @@ jobs:
           destination: jacoco-reports
 
   evaluate_test_coverage:
+    when:
+      not:
+        matches:
+          pattern: "^main$"
+          value: << pipeline.git.branch >>
     docker:
       - image: cimg/python:3.11
     steps:
@@ -67,6 +72,10 @@ jobs:
           command: python .circleci/evaluateCompareTestCoverage.py $LOCAL_BRANCH_COVERAGEPCT_FILENAME processed_main/mainbranch_processed_coverage.txt
 
   save_main_branch_test_coverage:
+    when:
+      matches:
+        pattern: "^main$"
+        value: << pipeline.git.branch >>
     docker:
       - image: cimg/python:3.11
     steps:
@@ -101,25 +110,12 @@ jobs:
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
-  feature-branch-workflow:
-    when:
-      not:
-        matches:
-          pattern: "^main$"
-          value: << pipeline.git.branch >>
-    jobs:
-      - generate_and_store_test_coverage
-      - evaluate_test_coverage:
-          requires:
-            - generate_and_store_test_coverage
-  main-branch-workflow:
-    when:
-      matches:
-        pattern: "^main$"
-        value: << pipeline.git.branch >>
+  code-coverage-example-workflow:
     jobs:
       - generate_and_store_test_coverage
       - save_main_branch_test_coverage:
           requires:
             - generate_and_store_test_coverage
-
+      - evaluate_test_coverage:
+          requires:
+            - generate_and_store_test_coverage
