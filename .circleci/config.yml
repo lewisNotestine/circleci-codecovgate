@@ -56,6 +56,7 @@ jobs:
       - run:
           name: "calculate feature branch test coverage"
           command: |
+            ls -an ./target/my-reports/
             pip install -r .circleci/requirements.txt
             python .circleci/evaluateTestCoverage.py target/my-reports/index.html CACHE_KEY_PROCESSED_COVERAGE_DATA
       - when:
