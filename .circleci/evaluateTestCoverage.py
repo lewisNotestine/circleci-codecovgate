@@ -54,6 +54,5 @@ def run_coverage(source_coverage_file_path,
 
 if __name__ == '__main__':
     filepath = argv[1]
-    output_dir = argv[2]
-    circleci_branch_cachekeyname = argv[3]
-    run_coverage(filepath, output_dir, circleci_branch_cachekeyname)
+    output_file = argv[2]
+    run_coverage(filepath, output_file)

@@ -56,7 +56,7 @@ jobs:
 
                   echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
                   echo 'export LOCAL_BRANCH_COVERAGEPCT_FILENAME="processed_feature/$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
-                  # echo 'export mainbranch-process-cachekey_PROCESSED_COVERAGE_DATA="mainbranch_processed_coverage"' >> "$BASH_ENV"
+                  # echo 'export mainbranch-process-cachekey2_PROCESSED_COVERAGE_DATA="mainbranch_processed_coverage"' >> "$BASH_ENV"
 
                   echo 'branch is "$CIRCLE_BRANCH"'
 
@@ -67,7 +67,7 @@ jobs:
 
             - restore_cache:
                 keys:
-                  - mainbranch-process-cachekey
+                  - mainbranch-process-cachekey2
 
             - run:
                 name: "calculate feature branch test coverage"
@@ -76,12 +76,12 @@ jobs:
                   ls -an .
                   ls -an ./target/my-reports/
                   pip install -r .circleci/requirements.txt
-                  mkdir processed_feature
-                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html processed_feature CACHE_KEY_PROCESSED_COVERAGE_DATA
+                  mkdir ./processed_feature
+                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html /home/circleci/project/processed_feature/branch_output.txt
 
             - run:
                 name: "compare feature and main branch coverage results"
-                command: python .circleci/evaluateCompareTestCoverage.py $LOCAL_BRANCH_COVERAGEPCT_FILENAME /home/circleci/project/processed_main/mainbranch_processed_coverage.txt
+                command: python .circleci/evaluateCompareTestCoverage.py processed_feature/branch_output.txt /home/circleci/project/processed_main/mainbranch_processed_coverage.txt
 
       - when:
           condition:
@@ -95,7 +95,7 @@ jobs:
                   # see https://circleci.com/docs/configuration-reference/#savecache
                   echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
                   echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
-                  # echo 'export mainbranch-process-cachekey_PROCESSED_COVERAGE_DATA2="processed_main/mainbranch_processed_coverage"' >> "$BASH_ENV"
+                  # echo 'export mainbranch-process-cachekey2_PROCESSED_COVERAGE_DATA2="processed_main/mainbranch_processed_coverage"' >> "$BASH_ENV"
 
             - restore_cache:
                 keys:
@@ -106,12 +106,12 @@ jobs:
                 command: |
                   mkdir processed_main
                   pip install -r .circleci/requirements.txt
-                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html processed_main mainbranch-process-cachekey
+                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html /home/circleci/project/processed_main/branch_output.txt
 
             - save_cache:
-                key: mainbranch-process-cachekey
+                key: mainbranch-process-cachekey2
                 paths:
-                  - processed_main/mainbranch_processed_coverage.txt
+                  - /home/circleci/project/processed_main/branch_output.txt
 
 
 
