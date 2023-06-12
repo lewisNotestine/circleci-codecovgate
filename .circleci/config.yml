@@ -81,7 +81,7 @@ jobs:
 
             - run:
                 name: "compare feature and main branch coverage results"
-                command: python .circleci/evaluateCompareTestCoverage.py processed_feature/branch_output.txt /home/circleci/project/processed_main/mainbranch_processed_coverage.txt
+                command: python .circleci/evaluateCompareTestCoverage.py /home/circleci/project/processed_feature/branch_output.txt /home/circleci/project/processed_main/branch_output.txt
 
       - when:
           condition:
