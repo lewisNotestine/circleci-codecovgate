@@ -11,9 +11,10 @@ def load_html_report(file_path):
     return the html as a string
     """
     with open(file_path, 'r') as f:
-        html = ''
-        while line := f.readline():
-            html = html.join(line)
+
+        html_lines = f.readlines()
+        html = ''.join(html_lines)
+        return html
 
 
 def parse_coverage_from_doc(html_document):
@@ -29,7 +30,8 @@ def parse_coverage_from_doc(html_document):
 
     print(xpathresult[0])
     pctage: str = xpathresult[0].text
-    pctage.replace('%','')
+    return pctage.replace('%','')
+
 
 
 def run_coverage(source_coverage_file_path, circleci_branch_cachekeyname):
@@ -43,7 +45,9 @@ def run_coverage(source_coverage_file_path, circleci_branch_cachekeyname):
     covg_dir = os.path.dirname(source_coverage_file_path)
     output_file = os.path.join(covg_dir, f'{circleci_branch_cachekeyname}.txt')
     with open(output_file, 'w') as wf:
-        wf.write(coverage_pct)
+        wf.writelines(coverage_pct)
+        wf.flush()
+        wf.close()
 
 
 if __name__ == '__main__':
