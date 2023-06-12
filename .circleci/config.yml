@@ -48,10 +48,9 @@ jobs:
             echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
             echo 'export $LOCAL_BRANCH_COVERAGEPCT_FILENAME="target/my-reports/$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
 
-            echo 'export CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA='mainbranch_processed_coverage'
+            echo 'export CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA='mainbranch_processed_coverage' >> "$BASH_ENV"
             echo 'export $MAIN_BRANCH_COVERAGEPCT_FILENAME="target/my-reports/$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
 
-            echo 'export $COVERAGE_PASSES="False"'
       - restore_cache:
           keys:
             - $CACHE_KEY_RAW_COVERAGE_DATA
