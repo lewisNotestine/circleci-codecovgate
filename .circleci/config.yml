@@ -21,11 +21,9 @@ jobs:
           # see https://circleci.com/docs/env-vars/#parameters-and-bash-environment
           name: "set cache key name variables"
           command: |
-            echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
             echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
-            echo $CACHE_KEY_RAW_COVERAGE_DATA
       - save_cache:
-          key: $CACHE_KEY_RAW_COVERAGE_DATA
+          key: raw-coverage-data-{{ checksum "target/my-reports/index.html" }}
           paths:
             - target/my-reports
       - store_artifacts:
@@ -36,7 +34,6 @@ jobs:
 
     docker:
       - image: cimg/python:3.11
-
 
     steps:
       - checkout
@@ -51,7 +48,6 @@ jobs:
 
                   # TODO Branch and build num can already be interpolated in cache keys.
                   # see https://circleci.com/docs/configuration-reference/#savecache
-                  echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
 
 
                   echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
@@ -61,9 +57,9 @@ jobs:
                   echo 'branch is "$CIRCLE_BRANCH"'
 
 
-            # - restore_cache:
-            #     keys:
-            #       - $CACHE_KEY_RAW_COVERAGE_DATA
+            - restore_cache:
+                keys:
+                  - raw-coverage-data
 
             - restore_cache:
                 keys:
@@ -94,12 +90,10 @@ jobs:
                   # TODO Branch and build num can already be interpolated in cache keys.
                   # see https://circleci.com/docs/configuration-reference/#savecache
                   echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
-                  echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
-                  # echo 'export mainbranch-process-cachekey2_PROCESSED_COVERAGE_DATA2="processed_main/mainbranch_processed_coverage"' >> "$BASH_ENV"
 
             - restore_cache:
                 keys:
-                  - $CACHE_KEY_RAW_COVERAGE_DATA
+                  - raw-coverage-data
 
             - run:
                 name: "calculate main branch code coverage"
