@@ -21,11 +21,9 @@ jobs:
           # see https://circleci.com/docs/env-vars/#parameters-and-bash-environment
           name: "set cache key name variables"
           command: |
-            echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
             echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
-            echo $CACHE_KEY_RAW_COVERAGE_DATA
       - save_cache:
-          key: $CACHE_KEY_RAW_COVERAGE_DATA
+          key: raw-coverage-data-{{ checksum "target/my-reports/index.html" }}
           paths:
             - target/my-reports
       - store_artifacts:
@@ -33,73 +31,89 @@ jobs:
           destination: jacoco-reports
 
   evaluate_test_coverage:
+
     docker:
       - image: cimg/python:3.11
+
     steps:
       - checkout
-      - run:
-          name: "set and check cache key name variables"
-          command: |
-
-            # TODO Branch and build num can already be interpolated in cache keys.
-            # see https://circleci.com/docs/configuration-reference/#savecache
-            echo 'export CACHE_KEY_RAW_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_raw' >> "$BASH_ENV"
-
-            echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
-            echo 'export LOCAL_BRANCH_COVERAGEPCT_FILENAME="$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
-            echo 'export CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA="mainbranch_processed_coverage"' >> "$BASH_ENV"
-
-      - restore_cache:
-          keys:
-            - $CACHE_KEY_RAW_COVERAGE_DATA
-            - $CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
-      - run:
-          name: "calculate feature branch test coverage"
-          command: |
-            ls -an ./target/my-reports/
-            pip install -r .circleci/requirements.txt
-            python .circleci/evaluateTestCoverage.py target/my-reports/index.html CACHE_KEY_PROCESSED_COVERAGE_DATA
-      - when:
-          condition:
-            equal: [$CIRCLE_BRANCH, "main"]
-          steps:
-            - run:
-                name: "calculate main branch code coverage"
-                command: python .circleci/evaluateTestCoverage.py target/my-reports/index.html CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
-        # TODO maybe consolidate these conditions in a way that makes sense.
-      - when:
-          condition:
-            equal: [$CIRCLE_BRANCH, "main"]
-          steps:
-            - save_cache:
-                key:
-                  - $CACHE_KEY_MAINBRANCH_PROCESSED_COVERAGE_DATA
-                paths:
-                  - target/my-reports/mainbranch_processed_coverage.txt
       - when:
           condition:
             not:
-              equal: [$CIRCLE_BRANCH, "main"]
+              equal: [ main, << pipeline.git.branch >> ]
           steps:
             - run:
+                name: "set and check cache key name variables"
+                command: |
+
+                  # TODO Branch and build num can already be interpolated in cache keys.
+                  # see https://circleci.com/docs/configuration-reference/#savecache
+
+
+                  echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
+                  echo 'export LOCAL_BRANCH_COVERAGEPCT_FILENAME="processed_feature/$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
+                  # echo 'export mainbranch-process-cachekey2_PROCESSED_COVERAGE_DATA="mainbranch_processed_coverage"' >> "$BASH_ENV"
+
+                  echo 'branch is "$CIRCLE_BRANCH"'
+
+
+            - restore_cache:
+                keys:
+                  - raw-coverage-data
+
+            - restore_cache:
+                keys:
+                  - mainbranch-process-cachekey2
+
+            - run:
+                name: "calculate feature branch test coverage"
+                command: |
+                  pwd
+                  ls -an .
+                  ls -an ./target/my-reports/
+                  pip install -r .circleci/requirements.txt
+                  mkdir ./processed_feature
+                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html /home/circleci/project/processed_feature/branch_output.txt
+
+            - run:
                 name: "compare feature and main branch coverage results"
-                command: python .circleci/evaluateCompareTestCoverage.py $LOCAL_BRANCH_COVERAGEPCT_FILENAME target/my-reports/mainbranch_processed_coverage.txt
+                command: python .circleci/evaluateCompareTestCoverage.py /home/circleci/project/processed_feature/branch_output.txt /home/circleci/project/processed_main/branch_output.txt
+
+      - when:
+          condition:
+            equal: [ main, << pipeline.git.branch >> ]
+          steps:
+            - run:
+                name: "set and check cache key name variables"
+                command: |
+
+                  # TODO Branch and build num can already be interpolated in cache keys.
+                  # see https://circleci.com/docs/configuration-reference/#savecache
+                  echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
+
+            - restore_cache:
+                keys:
+                  - raw-coverage-data
+
+            - run:
+                name: "calculate main branch code coverage"
+                command: |
+                  mkdir processed_main
+                  pip install -r .circleci/requirements.txt
+                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html /home/circleci/project/processed_main/branch_output.txt
+
+            - save_cache:
+                key: mainbranch-process-cachekey2
+                paths:
+                  - /home/circleci/project/processed_main/branch_output.txt
 
 
 
-
-      # compute the coverage (python)
-
-      # if branch name == main, stash code coverage
-
-      # compare coverage with cached coverage from main branch (python)
-
-      # conditionally fail build if coverage metric falls below value from cached main branch
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  code-coverage-example-workflow:
     jobs:
       - generate_and_store_test_coverage
       - evaluate_test_coverage:
