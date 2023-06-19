@@ -9,7 +9,7 @@ orbs:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
-  generate_and_evaluate_test_coverage:
+  generate_and_store_test_coverage:
     docker:
       - image: cimg/openjdk:17.0
     steps:
