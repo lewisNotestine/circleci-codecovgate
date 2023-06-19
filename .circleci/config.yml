@@ -29,7 +29,9 @@ orbs:
 workflows:
   code-coverage-example-workflow:
     jobs:
-      - code-coverage/run_and_save_test_coverage
+      - code-coverage/run_and_save_test_coverage:
+          branch_name: << pipeline.git.branch >>
       - code-coverage/evaluate_test_coverage:
+          branch_name: << pipeline.git.branch >>
           requires:
             - code-coverage/run_and_save_test_coverage
