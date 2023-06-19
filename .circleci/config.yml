@@ -3,7 +3,7 @@
 version: 2.1
 
 orbs:
-  code-coverage: lewisnotestine/java-coverage-gate-orb@2.0.3
+  code-coverage: lewisnotestine/java-coverage-gate-orb@2.0.4
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
