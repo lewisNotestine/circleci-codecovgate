@@ -3,26 +3,7 @@
 version: 2.1
 
 orbs:
-  # browser-tools: circleci/browser-tools@1.4.1
-  code-coverage: lewisnotestine/java-coverage-gate-orb@1.0.0
-
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/configuration-reference/#jobs
-# jobs:
-#   code-coverage/run_and_save_test_coverage
-#   code-coverage/evaluate_test_coverage
-  # generate_and_store_test_coverage:
-  #   docker:
-  #     - image: cimg/openjdk:17.0
-  #   steps:
-  #     - code-coverage/run_and_save_test_coverage
-  # evaluate_test_coverage:
-  #   docker:
-  #     - image: cimg/python:3.11
-  #   steps:
-  #     - code-coverage/evaluate_test_coverage
-
-
+  code-coverage: lewisnotestine/java-coverage-gate-orb@2.0.0
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
