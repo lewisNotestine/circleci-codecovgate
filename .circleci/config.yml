@@ -3,119 +3,15 @@
 version: 2.1
 
 orbs:
-  browser-tools: circleci/browser-tools@1.4.1
-
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/configuration-reference/#jobs
-jobs:
-  generate_and_store_test_coverage:
-    docker:
-      - image: cimg/openjdk:17.0
-    steps:
-      - checkout
-      - browser-tools/install-browser-tools
-      - run: mvn test
-      - store_artifacts:
-          path: target
-      - run:
-          # see https://circleci.com/docs/env-vars/#parameters-and-bash-environment
-          name: "set cache key name variables"
-          command: |
-            echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
-      - save_cache:
-          key: raw-coverage-data-{{ checksum "target/my-reports/index.html" }}
-          paths:
-            - target/my-reports
-      - store_artifacts:
-          path: target/my-reports
-          destination: jacoco-reports
-
-  evaluate_test_coverage:
-
-    docker:
-      - image: cimg/python:3.11
-
-    steps:
-      - checkout
-      - when:
-          condition:
-            not:
-              equal: [ main, << pipeline.git.branch >> ]
-          steps:
-            - run:
-                name: "set and check cache key name variables"
-                command: |
-
-                  # TODO Branch and build num can already be interpolated in cache keys.
-                  # see https://circleci.com/docs/configuration-reference/#savecache
-
-
-                  echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
-                  echo 'export LOCAL_BRANCH_COVERAGEPCT_FILENAME="processed_feature/$CACHE_KEY_PROCESSED_COVERAGE_DATA".txt' >> "$BASH_ENV"
-                  # echo 'export mainbranch-process-cachekey2_PROCESSED_COVERAGE_DATA="mainbranch_processed_coverage"' >> "$BASH_ENV"
-
-                  echo 'branch is "$CIRCLE_BRANCH"'
-
-
-            - restore_cache:
-                keys:
-                  - raw-coverage-data
-
-            - restore_cache:
-                keys:
-                  - mainbranch-process-cachekey2
-
-            - run:
-                name: "calculate feature branch test coverage"
-                command: |
-                  pwd
-                  ls -an .
-                  ls -an ./target/my-reports/
-                  pip install -r .circleci/requirements.txt
-                  mkdir ./processed_feature
-                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html /home/circleci/project/processed_feature/branch_output.txt
-
-            - run:
-                name: "compare feature and main branch coverage results"
-                command: python .circleci/evaluateCompareTestCoverage.py /home/circleci/project/processed_feature/branch_output.txt /home/circleci/project/processed_main/branch_output.txt
-
-      - when:
-          condition:
-            equal: [ main, << pipeline.git.branch >> ]
-          steps:
-            - run:
-                name: "set and check cache key name variables"
-                command: |
-
-                  # TODO Branch and build num can already be interpolated in cache keys.
-                  # see https://circleci.com/docs/configuration-reference/#savecache
-                  echo 'export CACHE_KEY_PROCESSED_COVERAGE_DATA="$CIRCLE_BRANCH"_"$CIRCLE_BUILD_NUM"_covg_processed' >> "$BASH_ENV"
-
-            - restore_cache:
-                keys:
-                  - raw-coverage-data
-
-            - run:
-                name: "calculate main branch code coverage"
-                command: |
-                  mkdir processed_main
-                  pip install -r .circleci/requirements.txt
-                  python .circleci/evaluateTestCoverage.py target/my-reports/index.html /home/circleci/project/processed_main/branch_output.txt
-
-            - save_cache:
-                key: mainbranch-process-cachekey2
-                paths:
-                  - /home/circleci/project/processed_main/branch_output.txt
-
-
-
+  code-coverage: lewisnotestine/java-coverage-gate-orb@2.0.6
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
   code-coverage-example-workflow:
     jobs:
-      - generate_and_store_test_coverage
-      - evaluate_test_coverage:
+      - code-coverage/run_and_save_test_coverage
+      - code-coverage/evaluate_test_coverage:
+          branch_name: << pipeline.git.branch >>
           requires:
-            - generate_and_store_test_coverage
+            - code-coverage/run_and_save_test_coverage
